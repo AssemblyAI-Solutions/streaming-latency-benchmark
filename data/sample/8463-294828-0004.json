@@ -1,0 +1,37 @@
+[
+  {
+    "text": "but",
+    "start": 180,
+    "end": 380
+  },
+  {
+    "text": "now",
+    "start": 380,
+    "end": 720
+  },
+  {
+    "text": "nothing",
+    "start": 720,
+    "end": 1100
+  },
+  {
+    "text": "could",
+    "start": 1100,
+    "end": 1240
+  },
+  {
+    "text": "hold",
+    "start": 1240,
+    "end": 1530
+  },
+  {
+    "text": "me",
+    "start": 1530,
+    "end": 1620
+  },
+  {
+    "text": "back",
+    "start": 1620,
+    "end": 2180
+  }
+]

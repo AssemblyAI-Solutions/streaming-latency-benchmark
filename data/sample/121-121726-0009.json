@@ -1,0 +1,72 @@
+[
+  {
+    "text": "hotel",
+    "start": 510,
+    "end": 1480
+  },
+  {
+    "text": "a",
+    "start": 2210,
+    "end": 2510
+  },
+  {
+    "text": "place",
+    "start": 2510,
+    "end": 2980
+  },
+  {
+    "text": "where",
+    "start": 2980,
+    "end": 3170
+  },
+  {
+    "text": "a",
+    "start": 3170,
+    "end": 3250
+  },
+  {
+    "text": "guest",
+    "start": 3250,
+    "end": 3590
+  },
+  {
+    "text": "often",
+    "start": 3590,
+    "end": 4050
+  },
+  {
+    "text": "gives",
+    "start": 4050,
+    "end": 4370
+  },
+  {
+    "text": "up",
+    "start": 4370,
+    "end": 4530
+  },
+  {
+    "text": "good",
+    "start": 4530,
+    "end": 4900
+  },
+  {
+    "text": "dollars",
+    "start": 4900,
+    "end": 5400
+  },
+  {
+    "text": "for",
+    "start": 5400,
+    "end": 5600
+  },
+  {
+    "text": "poor",
+    "start": 5600,
+    "end": 6040
+  },
+  {
+    "text": "quarters",
+    "start": 6040,
+    "end": 6760
+  }
+]

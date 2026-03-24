@@ -1,0 +1,82 @@
+[
+  {
+    "text": "he",
+    "start": 90,
+    "end": 220
+  },
+  {
+    "text": "shall",
+    "start": 220,
+    "end": 390
+  },
+  {
+    "text": "not",
+    "start": 390,
+    "end": 590
+  },
+  {
+    "text": "leave",
+    "start": 590,
+    "end": 830
+  },
+  {
+    "text": "you",
+    "start": 830,
+    "end": 1040
+  },
+  {
+    "text": "day",
+    "start": 1040,
+    "end": 1290
+  },
+  {
+    "text": "or",
+    "start": 1290,
+    "end": 1360
+  },
+  {
+    "text": "night",
+    "start": 1360,
+    "end": 1700
+  },
+  {
+    "text": "whether",
+    "start": 1760,
+    "end": 1990
+  },
+  {
+    "text": "you",
+    "start": 1990,
+    "end": 2150
+  },
+  {
+    "text": "are",
+    "start": 2150,
+    "end": 2220
+  },
+  {
+    "text": "working",
+    "start": 2220,
+    "end": 2700
+  },
+  {
+    "text": "or",
+    "start": 2700,
+    "end": 2840
+  },
+  {
+    "text": "playing",
+    "start": 2840,
+    "end": 3340
+  },
+  {
+    "text": "or",
+    "start": 3340,
+    "end": 3520
+  },
+  {
+    "text": "sleeping",
+    "start": 3520,
+    "end": 4080
+  }
+]

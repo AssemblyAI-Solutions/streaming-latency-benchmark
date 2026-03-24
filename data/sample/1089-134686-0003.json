@@ -1,0 +1,37 @@
+[
+  {
+    "text": "hello",
+    "start": 400,
+    "end": 690
+  },
+  {
+    "text": "bertie",
+    "start": 690,
+    "end": 1280
+  },
+  {
+    "text": "any",
+    "start": 1280,
+    "end": 1460
+  },
+  {
+    "text": "good",
+    "start": 1460,
+    "end": 1770
+  },
+  {
+    "text": "in",
+    "start": 1770,
+    "end": 1850
+  },
+  {
+    "text": "your",
+    "start": 1850,
+    "end": 1990
+  },
+  {
+    "text": "mind",
+    "start": 1990,
+    "end": 2480
+  }
+]

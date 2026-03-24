@@ -1,0 +1,42 @@
+[
+  {
+    "text": "how",
+    "start": 240,
+    "end": 400
+  },
+  {
+    "text": "did",
+    "start": 400,
+    "end": 520
+  },
+  {
+    "text": "her",
+    "start": 520,
+    "end": 640
+  },
+  {
+    "text": "mother",
+    "start": 640,
+    "end": 1000
+  },
+  {
+    "text": "ever",
+    "start": 1040,
+    "end": 1350
+  },
+  {
+    "text": "let",
+    "start": 1350,
+    "end": 1520
+  },
+  {
+    "text": "her",
+    "start": 1520,
+    "end": 1650
+  },
+  {
+    "text": "go",
+    "start": 1650,
+    "end": 2080
+  }
+]
