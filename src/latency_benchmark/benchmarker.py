@@ -152,6 +152,9 @@ class LatencyBenchmarker:
         aligned_words, wer = self._get_aligned_words(ref_text, streamed_text)
 
         matched_ref = self._match_words_to_reference(aligned_words, ground_truth)
+
+        # Match words against all transcripts (partials + finals) for emission latency.
+        # This measures when the word *first appeared* in any API output.
         matched_transcripts = self._match_words_to_transcripts(
             aligned_words, output.transcripts
         )
@@ -163,6 +166,12 @@ class LatencyBenchmarker:
         latencies = self._compute_latencies(
             output.chunks_processing, matched_ref, matched_transcripts
         )
+
+        # Filter out negative latencies. These occur when the API speculatively
+        # emits a word in a partial transcript before the audio chunk covering
+        # that word's end has been sent. This is valid API behavior (predictive
+        # decoding) but not a meaningful latency measurement.
+        latencies = [lat for lat in latencies if lat >= 0]
 
         return BenchmarkResult(
             session_init_latency_ms=output.session_init_latency_ms,

@@ -49,35 +49,47 @@ def main(api_key, endpoint, dataset, output, sample_rate, chunk_size_ms, speech_
     all_init_latencies = []
     all_wers = []
 
+    failed_files = []
     for i, (audio_path, json_path) in enumerate(pairs, 1):
         filename = os.path.basename(audio_path)
         click.echo(f"[{i}/{len(pairs)}] Processing {filename}...")
 
-        chunks = load_and_chunk_audio(audio_path, sample_rate, chunk_size_ms)
-        ground_truth = load_ground_truth(json_path)
+        try:
+            chunks = load_and_chunk_audio(audio_path, sample_rate, chunk_size_ms)
+            ground_truth = load_ground_truth(json_path)
 
-        run_output = run_streaming_session(
-            api_endpoint=endpoint,
-            api_key=api_key,
-            audio_chunks=chunks,
-            sample_rate=sample_rate,
-            speech_model=speech_model,
-        )
+            run_output = run_streaming_session(
+                api_endpoint=endpoint,
+                api_key=api_key,
+                audio_chunks=chunks,
+                sample_rate=sample_rate,
+                speech_model=speech_model,
+            )
 
-        result = benchmarker.run(run_output, ground_truth)
+            result = benchmarker.run(run_output, ground_truth)
 
-        all_latencies.extend(result.per_word_latencies_ms)
-        all_init_latencies.append(result.session_init_latency_ms)
-        all_wers.append(result.wer)
+            all_latencies.extend(result.per_word_latencies_ms)
+            all_init_latencies.append(result.session_init_latency_ms)
+            all_wers.append(result.wer)
 
-        file_stats = compute_stats(result.per_word_latencies_ms)
-        click.echo(
-            f"  -> {file_stats['count']} words, "
-            f"mean={file_stats['mean']:.0f}ms, "
-            f"median={file_stats['median']:.0f}ms, "
-            f"p90={file_stats['p90']:.0f}ms, "
-            f"WER={result.wer:.2%}"
-        )
+            file_stats = compute_stats(result.per_word_latencies_ms)
+            click.echo(
+                f"  -> {file_stats['count']} words, "
+                f"mean={file_stats['mean']:.0f}ms, "
+                f"median={file_stats['median']:.0f}ms, "
+                f"p90={file_stats['p90']:.0f}ms, "
+                f"WER={result.wer:.2%}"
+            )
+        except Exception as e:
+            click.echo(f"  -> FAILED: {e}", err=True)
+            failed_files.append(filename)
+
+    if failed_files:
+        click.echo(f"\n{len(failed_files)} file(s) failed: {', '.join(failed_files)}")
+
+    if not all_latencies:
+        click.echo("No latency data collected.", err=True)
+        sys.exit(1)
 
     click.echo()
     stats = compute_stats(all_latencies)

@@ -25,10 +25,17 @@ def _buffer_audio(
     realtime: bool = True,
 ) -> None:
     """Feed audio chunks into buffer at real-time rate (or instantly if realtime=False)."""
-    for chunk in audio_chunks:
-        if realtime:
-            time.sleep(max(chunk.duration_ms / 1000 - 0.0025, 0))
-        buffer.put(chunk)
+    if realtime and audio_chunks:
+        start = time.monotonic()
+        for i, chunk in enumerate(audio_chunks):
+            target = start + (i + 1) * chunk.duration_ms / 1000
+            delay = target - time.monotonic()
+            if delay > 0:
+                time.sleep(delay)
+            buffer.put(chunk)
+    else:
+        for chunk in audio_chunks:
+            buffer.put(chunk)
     done.set()
 
 
@@ -141,7 +148,10 @@ def run_streaming_session(
         chunks_processing = send_future.result()
         session_id, transcripts = recv_future.result()
 
-    ws.close()
+    try:
+        ws.close()
+    except Exception:
+        pass
 
     return RunOutput(
         session_id=session_id,

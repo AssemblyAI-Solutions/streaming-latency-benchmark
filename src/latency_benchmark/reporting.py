@@ -82,8 +82,11 @@ def plot_latencies(latencies_ms: List[int], output_path: str, title: str = "Emis
     import matplotlib.pyplot as plt
 
     bucket_size = 50
+    min_lat = min(0, min(latencies_ms))  # include negatives if present
     max_lat = max(latencies_ms)
-    bins = np.arange(0, max_lat + bucket_size, bucket_size)
+    bins = np.arange(min_lat, max_lat + bucket_size, bucket_size)
+    if len(bins) < 2:
+        bins = np.array([min_lat, min_lat + bucket_size])
     hist, edges = np.histogram(latencies_ms, bins=bins)
     total = len(latencies_ms)
     pcts = (hist / total) * 100
