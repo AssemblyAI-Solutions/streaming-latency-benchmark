@@ -34,6 +34,60 @@ it can be misleading:
 4. For each matched word: `latency = time_transcript_received - time_last_audio_chunk_sent`
 5. Aggregate into mean, median, P90, P99
 
+## Architecture
+
+### How the benchmark works
+
+The tool runs a pipeline for each audio file in the dataset:
+
+```
+┌─────────────┐    ┌──────────────────┐    ┌──────────────────┐    ┌────────────┐
+│  Load audio  │───▶│  Stream to API   │───▶│  Align & compute │───▶│  Report    │
+│  + ground    │    │  via WebSocket   │    │  emission latency│    │  results   │
+│  truth       │    │  at real-time    │    │  per word        │    │            │
+└─────────────┘    └──────────────────┘    └──────────────────┘    └────────────┘
+```
+
+**Step 1 — Load:** Read a WAV file and split it into fixed-duration chunks (default 100ms). Load the matching JSON file containing human-labeled word timestamps.
+
+**Step 2 — Stream:** Open a WebSocket connection to AssemblyAI's streaming API. Three threads run concurrently:
+- **Buffer thread** feeds audio chunks at real-time rate (drift-free scheduling)
+- **Send thread** writes chunks to the WebSocket and records the monotonic timestamp of each send
+- **Receive thread** reads transcript messages from the WebSocket and records the monotonic timestamp of each receive
+
+**Step 3 — Align & compute:** The API's transcript won't perfectly match ground truth (some words may be missing, substituted, or added). The tool uses [jiwer](https://github.com/jitsi/jiwer) to perform word-level edit-distance alignment between the normalized ground truth and the normalized API output, keeping only words that match in both. For each matched word:
+- Find the audio chunk that covers the word's end timestamp ("Moment A" — when all audio for this word was sent)
+- Find the first transcript message containing this word ("Moment B" — when the API first returned this word)
+- **Emission latency = Moment B − Moment A**
+
+**Step 4 — Report:** Aggregate per-word latencies across all files into summary statistics (mean, median, P90, P99), write CSV/JSON output, and generate a histogram plot.
+
+### Project structure
+
+```
+src/latency_benchmark/
+├── cli.py           # Click CLI — wires everything together
+├── audio.py         # Loads WAV files, splits into fixed-duration PCM16 chunks
+├── dataset.py       # Discovers audio+JSON pairs in a directory, loads ground truth
+├── session.py       # WebSocket session — streams audio, collects transcripts with timestamps
+├── benchmarker.py   # Core algorithm — word alignment (jiwer) + emission latency computation
+├── reporting.py     # Stats aggregation, CSV/JSON output, histogram plotting
+└── models.py        # Dataclasses (AudioChunk, RunOutput, StreamingTranscript, etc.)
+
+scripts/
+└── download_sample_data.py  # Downloads LibriSpeech audio + alignments for benchmarking
+
+data/sample/          # 100 pre-downloaded LibriSpeech test files with ground-truth timestamps
+tests/                # Unit tests for each module + optional integration test
+```
+
+### Key design decisions
+
+- **`time.monotonic()`** is used for all timestamps, avoiding issues with wall-clock adjustments
+- **Text normalization** via `whisper-normalizer` ensures consistent comparison between ground truth and API output (handles casing, punctuation, number formatting)
+- **Negative latencies are filtered out** — these occur when the API speculatively emits a word in a partial transcript before the audio covering that word has been fully sent (predictive decoding). This is valid API behavior but not a meaningful latency measurement.
+- **Per-file error handling** — if a WebSocket session fails for one file, the tool logs the error and continues with the remaining files
+
 ## Quick Start
 
 ```bash
