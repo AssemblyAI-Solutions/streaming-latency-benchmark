@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: streaming-latency-benchmark
+Version: 0.1.0
+Summary: Measure emission latency for AssemblyAI's streaming speech-to-text API
+Requires-Python: >=3.10
+Requires-Dist: websockets>=12.0
+Requires-Dist: jiwer>=3.0
+Requires-Dist: numpy>=1.24
+Requires-Dist: matplotlib>=3.7
+Requires-Dist: whisper-normalizer>=0.0.1
+Requires-Dist: click>=8.1
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-mock>=3.10; extra == "dev"
+Requires-Dist: click>=8.1; extra == "dev"

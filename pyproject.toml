@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streaming-latency-benchmark"
+version = "0.1.0"
+description = "Measure emission latency for AssemblyAI's streaming speech-to-text API"
+requires-python = ">=3.10"
+dependencies = [
+    "websockets>=12.0",
+    "jiwer>=3.0",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "whisper-normalizer>=0.0.1",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-mock>=3.10",
+    "click>=8.1",
+]
+
+[project.scripts]
+latency-benchmark = "latency_benchmark.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
