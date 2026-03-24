@@ -2,6 +2,9 @@ import os
 import sys
 
 import click
+from dotenv import load_dotenv
+
+load_dotenv()
 import numpy as np
 
 from latency_benchmark.audio import load_and_chunk_audio
