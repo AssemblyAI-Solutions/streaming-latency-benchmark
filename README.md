@@ -184,10 +184,10 @@ Test different AssemblyAI regions:
 
 ```bash
 # US East
-latency-benchmark --endpoint wss://streaming.use1.assemblyai.com --dataset ./data/sample
+latency-benchmark --endpoint wss://streaming.use1.assemblyai.com/v3/ws --dataset ./data/sample
 
 # US West
-latency-benchmark --endpoint wss://streaming.usw2.assemblyai.com --dataset ./data/sample
+latency-benchmark --endpoint wss://streaming.usw2.assemblyai.com/v3/ws --dataset ./data/sample
 ```
 
 ## Improving production monitoring
