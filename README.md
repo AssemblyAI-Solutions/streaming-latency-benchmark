@@ -110,15 +110,23 @@ pass it directly via `--api-key` or the `ASSEMBLYAI_API_KEY` environment variabl
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--api-key` | `$ASSEMBLYAI_API_KEY` | AssemblyAI API key |
-| `--endpoint` | `wss://streaming.assemblyai.com` | WebSocket endpoint |
+| `--endpoint` | `wss://streaming.assemblyai.com/v3/ws` | WebSocket endpoint |
 | `--dataset` | (required) | Directory with audio + JSON pairs |
 | `--output` | `./results` | Output directory |
 | `--sample-rate` | `16000` | Audio sample rate (Hz) |
 | `--chunk-size-ms` | `100` | Audio chunk duration (ms) |
-| `--speech-model` | (default) | Model override |
+| `--speech-model` | `u3-rt-pro` | Speech model (see note below) |
 | `--num-files` | `0` (all) | Limit number of files |
 | `--plot/--no-plot` | `--plot` | Generate histogram |
 | `--format` | `both` | Output format: csv, json, or both |
+
+**Speech model note:** The default model is `u3-rt-pro`. For low-latency
+streaming use cases (e.g., voicemail detection), use `universal-streaming-english`
+which has significantly lower emission latency (~300ms median vs ~3s):
+
+```bash
+latency-benchmark --speech-model universal-streaming-english --dataset ./data/sample
+```
 
 ## Included Sample Data
 
