@@ -1,9 +1,0 @@
-pyproject.toml
-src/latency_benchmark/__init__.py
-src/streaming_latency_benchmark.egg-info/PKG-INFO
-src/streaming_latency_benchmark.egg-info/SOURCES.txt
-src/streaming_latency_benchmark.egg-info/dependency_links.txt
-src/streaming_latency_benchmark.egg-info/entry_points.txt
-src/streaming_latency_benchmark.egg-info/requires.txt
-src/streaming_latency_benchmark.egg-info/top_level.txt
-tests/test_models.py

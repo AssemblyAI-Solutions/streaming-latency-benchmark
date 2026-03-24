@@ -1,2 +1,0 @@
-[console_scripts]
-latency-benchmark = latency_benchmark.cli:main
