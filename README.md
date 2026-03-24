@@ -41,11 +41,9 @@ it can be misleading:
 The tool runs a pipeline for each audio file in the dataset:
 
 ```
-┌─────────────┐    ┌──────────────────┐    ┌──────────────────┐    ┌────────────┐
-│  Load audio  │───▶│  Stream to API   │───▶│  Align & compute │───▶│  Report    │
-│  + ground    │    │  via WebSocket   │    │  emission latency│    │  results   │
-│  truth       │    │  at real-time    │    │  per word        │    │            │
-└─────────────┘    └──────────────────┘    └──────────────────┘    └────────────┘
+Load audio        Stream to API       Align & compute       Report
++ ground truth -> via WebSocket    -> emission latency   -> results
+                  at real-time        per word
 ```
 
 **Step 1 — Load:** Read a WAV file and split it into fixed-duration chunks (default 100ms). Load the matching JSON file containing human-labeled word timestamps.
