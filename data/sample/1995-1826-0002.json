@@ -1,0 +1,62 @@
+[
+  {
+    "text": "john",
+    "start": 360,
+    "end": 690
+  },
+  {
+    "text": "taylor",
+    "start": 690,
+    "end": 1070
+  },
+  {
+    "text": "who",
+    "start": 1070,
+    "end": 1210
+  },
+  {
+    "text": "had",
+    "start": 1210,
+    "end": 1340
+  },
+  {
+    "text": "supported",
+    "start": 1340,
+    "end": 1810
+  },
+  {
+    "text": "her",
+    "start": 1810,
+    "end": 1970
+  },
+  {
+    "text": "through",
+    "start": 1970,
+    "end": 2170
+  },
+  {
+    "text": "college",
+    "start": 2170,
+    "end": 2640
+  },
+  {
+    "text": "was",
+    "start": 2640,
+    "end": 2860
+  },
+  {
+    "text": "interested",
+    "start": 2950,
+    "end": 3600
+  },
+  {
+    "text": "in",
+    "start": 3630,
+    "end": 3800
+  },
+  {
+    "text": "cotton",
+    "start": 3800,
+    "end": 4320
+  }
+]

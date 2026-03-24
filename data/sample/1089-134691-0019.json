@@ -1,0 +1,42 @@
+[
+  {
+    "text": "a",
+    "start": 500,
+    "end": 600
+  },
+  {
+    "text": "voice",
+    "start": 600,
+    "end": 1010
+  },
+  {
+    "text": "from",
+    "start": 1010,
+    "end": 1200
+  },
+  {
+    "text": "beyond",
+    "start": 1200,
+    "end": 1600
+  },
+  {
+    "text": "the",
+    "start": 1600,
+    "end": 1700
+  },
+  {
+    "text": "world",
+    "start": 1700,
+    "end": 2120
+  },
+  {
+    "text": "was",
+    "start": 2120,
+    "end": 2280
+  },
+  {
+    "text": "calling",
+    "start": 2280,
+    "end": 2790
+  }
+]
