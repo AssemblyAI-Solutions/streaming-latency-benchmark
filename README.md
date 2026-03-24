@@ -94,16 +94,16 @@ tests/                # Unit tests for each module + optional integration test
 # Install
 pip install -e .
 
-# Run with sample data
-latency-benchmark \
-  --api-key YOUR_ASSEMBLYAI_API_KEY \
-  --dataset ./data/sample \
-  --output ./results
+# Set up your API key
+cp .env.example .env
+# Edit .env and add your AssemblyAI API key
 
-# Or use env var
-export ASSEMBLYAI_API_KEY=your_key
-latency-benchmark --dataset ./data/sample
+# Run with sample data
+latency-benchmark --dataset ./data/sample --output ./results
 ```
+
+The tool automatically loads your API key from the `.env` file. You can also
+pass it directly via `--api-key` or the `ASSEMBLYAI_API_KEY` environment variable.
 
 ## Options
 
