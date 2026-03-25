@@ -183,9 +183,11 @@ latency-benchmark --endpoint wss://streaming.usw2.assemblyai.com/v3/ws --dataset
 ## Improving production monitoring
 
 For ongoing production monitoring (not just benchmarking), consider adding a
-**Voice Activity Detector (VAD)** to your pipeline:
+**Voice Activity Detector (VAD)** to your pipeline. See the
+[VAD streaming example](examples/vad-streaming/) for a working implementation
+using Silero VAD that:
 
-1. **Silero VAD** or **WebRTC VAD** can detect speech start/end events
-2. Use `speech_start → first_transcript_received` for real-time TTFB approximation
-3. Use `speech_end → last_partial_received` for real-time emission latency approximation
-4. Run on a subset of production traffic for continuous monitoring
+1. Detects speech start/end events on each audio chunk
+2. Measures `speech_start → first_transcript_received` for real-time TTFB
+3. Measures `speech_end → next_transcript_received` for real-time emission latency approximation
+4. Can be sampled on a subset of production traffic (5-10%) for continuous monitoring
