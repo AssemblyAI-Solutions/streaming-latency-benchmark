@@ -35,7 +35,7 @@ TTCT is the actionable end-to-end latency for voice-agent use cases.
 
 ### When to use TTCT vs emission latency
 
-- **Voice agents** (e.g., AgentForce, voice copilots): use **TTCT** — the agent
+- **Voice agents**: use **TTCT** — the agent
   cannot act on partial results that may still be revised, so what matters is
   how fast the final transcript arrives after end-of-speech.
 - **Live captioning, voicemail detection, transcription monitoring**: use
