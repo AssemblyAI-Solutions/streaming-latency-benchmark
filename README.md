@@ -95,7 +95,7 @@ src/latency_benchmark/
 ├── audio.py         # Loads WAV files, splits into fixed-duration PCM16 chunks
 ├── dataset.py       # Discovers audio+JSON pairs in a directory, loads ground truth
 ├── session.py       # WebSocket session — streams audio, collects transcripts with timestamps
-├── benchmarker.py   # Core algorithm — word alignment (jiwer) + emission latency computation
+├── benchmarker.py   # Core algorithm — word alignment (jiwer) + emission latency & TTCT computation
 ├── reporting.py     # Stats aggregation, CSV/JSON output, histogram plotting
 └── models.py        # Dataclasses (AudioChunk, RunOutput, StreamingTranscript, etc.)
 
@@ -110,7 +110,8 @@ tests/                # Unit tests for each module + optional integration test
 
 - **`time.monotonic()`** is used for all timestamps, avoiding issues with wall-clock adjustments
 - **Text normalization** via `whisper-normalizer` ensures consistent comparison between ground truth and API output (handles casing, punctuation, number formatting)
-- **Negative latencies are filtered out** — these occur when the API speculatively emits a word in a partial transcript before the audio covering that word has been fully sent (predictive decoding). This is valid API behavior but not a meaningful latency measurement.
+- **Negative latencies are filtered out** (both emission and TTCT) — these occur when the API speculatively emits a word in a partial transcript before the audio covering that word has been fully sent (predictive decoding). This is valid API behavior but not a meaningful latency measurement.
+- **`Terminate` is sent immediately after the last audio chunk** to close the session cleanly. This can short-circuit the API's normal silence-threshold wait at end-of-stream, so reported TTCT values should be read as a **lower bound** vs. what a continuously-streaming production agent would experience.
 - **Per-file error handling** — if a WebSocket session fails for one file, the tool logs the error and continues with the remaining files
 
 ## Quick Start
@@ -137,10 +138,10 @@ pass it directly via `--api-key` or the `ASSEMBLYAI_API_KEY` environment variabl
 | `--api-key` | `$ASSEMBLYAI_API_KEY` | AssemblyAI API key |
 | `--endpoint` | `wss://streaming.assemblyai.com/v3/ws` | WebSocket endpoint |
 | `--dataset` | (required) | Directory with audio + JSON pairs |
-| `--output` | `./results` | Output directory |
+| `--output` | `./results` | Base output directory; each run lands in `{output}/{speech_model}/{timestamp}/` |
 | `--sample-rate` | `16000` | Audio sample rate (Hz) |
 | `--chunk-size-ms` | `100` | Audio chunk duration (ms) |
-| `--speech-model` | `u3-rt-pro` | Speech model (see note below) |
+| `--speech-model` | `u3-rt-pro` | Speech model |
 | `--num-files` | `0` (all) | Limit number of files |
 | `--plot/--no-plot` | `--plot` | Generate histogram |
 | `--format` | `both` | Output format: csv, json, or both |
