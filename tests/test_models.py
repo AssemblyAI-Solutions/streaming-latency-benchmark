@@ -56,7 +56,9 @@ def test_benchmark_result():
         session_init_latency_ms=150,
         first_partial_latency_ms=320,
         per_word_latencies_ms=[300, 320, 280, 350],
+        ttct_ms=[1100, 1200],
         wer=0.05,
     )
     assert result.first_partial_latency_ms == 320
     assert len(result.per_word_latencies_ms) == 4
+    assert result.ttct_ms == [1100, 1200]

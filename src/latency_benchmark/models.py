@@ -55,4 +55,5 @@ class BenchmarkResult:
     session_init_latency_ms: int
     first_partial_latency_ms: int
     per_word_latencies_ms: List[int]
+    ttct_ms: List[int]
     wer: float

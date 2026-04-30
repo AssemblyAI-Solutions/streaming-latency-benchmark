@@ -1,6 +1,6 @@
 # Streaming Latency Benchmark
 
-Measure **emission latency** for AssemblyAI's streaming speech-to-text API.
+Measure **emission latency** and **TTCT (Time to Complete Transcript)** for AssemblyAI's streaming speech-to-text API.
 
 ## What is Emission Latency?
 
@@ -26,13 +26,35 @@ it can be misleading:
 - For use cases like voicemail detection, it directly answers: "how fast do I
   get words back after they're spoken?"
 
+## What is TTCT?
+
+**TTCT (Time to Complete Transcript)** measures how quickly the system returns
+a *finalized* transcript after the user has finished speaking. That's the
+moment a downstream voice agent can actually start generating a response, so
+TTCT is the actionable end-to-end latency for voice-agent use cases.
+
+### When to use TTCT vs emission latency
+
+- **Voice agents** (e.g., AgentForce, voice copilots): use **TTCT** — the agent
+  cannot act on partial results that may still be revised, so what matters is
+  how fast the final transcript arrives after end-of-speech.
+- **Live captioning, voicemail detection, transcription monitoring**: use
+  **emission latency** — these consume words as they stream and don't need to
+  wait for finalization.
+
+TTCT is computed per finalized turn, not per word. It includes the
+silence-threshold wait (700ms by default), end-of-turn detection, final-pass
+decoding, and network round-trip — i.e., everything the user actually waits
+through. As a result, TTCT is typically much larger than emission latency.
+
 ### How it works
 
 1. Stream audio to AssemblyAI's API at real-time rate, recording when each chunk is sent
 2. Collect all transcript messages, recording when each is received
 3. Align the API's output against human-labeled ground truth using edit distance
-4. For each matched word: `latency = time_transcript_received - time_last_audio_chunk_sent`
-5. Aggregate into mean, median, P90, P99
+4. For each matched word: `emission_latency = time_transcript_received - time_last_audio_chunk_sent`
+5. For each finalized turn: `ttct = time_final_turn_received - time_audio_chunk_sent_for_last_word_in_turn`
+6. Aggregate both into mean, median, P90, P99
 
 ## Architecture
 
@@ -41,9 +63,9 @@ it can be misleading:
 The tool runs a pipeline for each audio file in the dataset:
 
 ```
-Load audio        Stream to API       Align & compute       Report
-+ ground truth -> via WebSocket    -> emission latency   -> results
-                  at real-time        per word
+Load audio        Stream to API       Align & compute            Report
++ ground truth -> via WebSocket    -> emission latency / TTCT -> results
+                  at real-time        per word / per turn
 ```
 
 **Step 1 — Load:** Read a WAV file and split it into fixed-duration chunks (default 100ms). Load the matching JSON file containing human-labeled word timestamps.
@@ -53,12 +75,17 @@ Load audio        Stream to API       Align & compute       Report
 - **Send thread** writes chunks to the WebSocket and records the monotonic timestamp of each send
 - **Receive thread** reads transcript messages from the WebSocket and records the monotonic timestamp of each receive
 
-**Step 3 — Align & compute:** The API's transcript won't perfectly match ground truth (some words may be missing, substituted, or added). The tool uses [jiwer](https://github.com/jitsi/jiwer) to perform word-level edit-distance alignment between the normalized ground truth and the normalized API output, keeping only words that match in both. For each matched word:
+**Step 3 — Align & compute (emission latency):** The API's transcript won't perfectly match ground truth (some words may be missing, substituted, or added). The tool uses [jiwer](https://github.com/jitsi/jiwer) to perform word-level edit-distance alignment between the normalized ground truth and the normalized API output, keeping only words that match in both. For each matched word:
 - Find the audio chunk that covers the word's end timestamp ("Moment A" — when all audio for this word was sent)
 - Find the first transcript message containing this word ("Moment B" — when the API first returned this word)
 - **Emission latency = Moment B − Moment A**
 
-**Step 4 — Report:** Aggregate per-word latencies across all files into summary statistics (mean, median, P90, P99), write CSV/JSON output, and generate a histogram plot.
+**Step 4 — Compute (TTCT):** For each `Turn` message with `end_of_turn=true`:
+- Take the audio chunk covering the turn's last word's `end` timestamp ("Moment A" — when the audio for the end of speech in that turn finished sending)
+- Take the wall-clock time when the final-turn message arrived ("Moment B")
+- **TTCT = Moment B − Moment A**
+
+**Step 5 — Report:** Aggregate per-word emission latencies and per-turn TTCT values across all files into summary statistics (mean, median, P90, P99), write CSV/JSON output, and generate histogram plots for each metric.
 
 ### Project structure
 
@@ -161,12 +188,18 @@ Each JSON file contains word-level timestamps:
 
 ## Output
 
-The tool produces:
+Each run writes into its own directory under `--output`, partitioned by model
+and timestamp so runs never overwrite each other:
 
-- **Console output**: Per-file stats and aggregate summary
-- **results.csv**: Summary stats + per-word latency values
-- **results.json**: Machine-readable results
-- **latency_histogram.png**: Distribution plot
+```
+{--output}/{speech_model}/{YYYY-MM-DDTHH-MM-SS}/
+├── results.csv              # summary stats + per-word emission + per-turn TTCT
+├── results.json              # machine-readable, with `emission_latency` and `ttct` sections
+├── latency_histogram.png     # emission-latency distribution
+└── ttct_histogram.png        # TTCT distribution
+```
+
+The tool also prints per-file stats and an aggregate summary table to the console.
 
 ## Testing specific endpoints
 

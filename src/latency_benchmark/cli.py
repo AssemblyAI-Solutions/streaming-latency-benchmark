@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 
 import click
 from dotenv import load_dotenv
@@ -33,7 +34,7 @@ from latency_benchmark.session import run_streaming_session
 @click.option("--plot/--no-plot", default=True, help="Generate histogram plot")
 @click.option("--format", "output_format", type=click.Choice(["csv", "json", "both"]), default="both")
 def main(api_key, endpoint, dataset, output, sample_rate, chunk_size_ms, speech_model, num_files, plot, output_format):
-    """Measure emission latency for AssemblyAI's streaming speech-to-text API."""
+    """Measure emission latency and TTCT for AssemblyAI's streaming speech-to-text API."""
     pairs = discover_dataset(dataset)
     if not pairs:
         click.echo("No audio+JSON pairs found in dataset directory.", err=True)
@@ -46,6 +47,7 @@ def main(api_key, endpoint, dataset, output, sample_rate, chunk_size_ms, speech_
 
     benchmarker = LatencyBenchmarker()
     all_latencies = []
+    all_ttct = []
     all_init_latencies = []
     all_wers = []
 
@@ -69,15 +71,23 @@ def main(api_key, endpoint, dataset, output, sample_rate, chunk_size_ms, speech_
             result = benchmarker.run(run_output, ground_truth)
 
             all_latencies.extend(result.per_word_latencies_ms)
+            all_ttct.extend(result.ttct_ms)
             all_init_latencies.append(result.session_init_latency_ms)
             all_wers.append(result.wer)
 
             file_stats = compute_stats(result.per_word_latencies_ms)
+            file_ttct_stats = compute_stats(result.ttct_ms)
+            ttct_part = (
+                f"ttct_median={file_ttct_stats['median']:.0f}ms ({file_ttct_stats['count']} turns)"
+                if file_ttct_stats["count"]
+                else "ttct=n/a"
+            )
             click.echo(
                 f"  -> {file_stats['count']} words, "
                 f"mean={file_stats['mean']:.0f}ms, "
                 f"median={file_stats['median']:.0f}ms, "
                 f"p90={file_stats['p90']:.0f}ms, "
+                f"{ttct_part}, "
                 f"WER={result.wer:.2%}"
             )
         except Exception as e:
@@ -93,27 +103,40 @@ def main(api_key, endpoint, dataset, output, sample_rate, chunk_size_ms, speech_
 
     click.echo()
     stats = compute_stats(all_latencies)
+    ttct_stats = compute_stats(all_ttct)
     avg_init = int(np.mean(all_init_latencies)) if all_init_latencies else 0
     avg_wer = float(np.mean(all_wers)) if all_wers else 0
 
-    click.echo(format_stats_table(stats, session_init_ms=avg_init, wer=avg_wer))
+    click.echo(
+        format_stats_table(
+            stats, session_init_ms=avg_init, wer=avg_wer, ttct_stats=ttct_stats
+        )
+    )
 
-    os.makedirs(output, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    run_dir = os.path.join(output, speech_model, timestamp)
+    os.makedirs(run_dir, exist_ok=True)
+    click.echo(f"\nRun directory: {run_dir}")
 
     if output_format in ("csv", "both"):
-        csv_path = os.path.join(output, "results.csv")
-        write_csv(csv_path, all_latencies, session_init_ms=avg_init, wer=avg_wer)
-        click.echo(f"\nCSV saved to: {csv_path}")
+        csv_path = os.path.join(run_dir, "results.csv")
+        write_csv(csv_path, all_latencies, session_init_ms=avg_init, wer=avg_wer, ttct_ms=all_ttct)
+        click.echo(f"CSV saved to: {csv_path}")
 
     if output_format in ("json", "both"):
-        json_path = os.path.join(output, "results.json")
-        write_json(json_path, all_latencies, session_init_ms=avg_init, wer=avg_wer)
+        json_path = os.path.join(run_dir, "results.json")
+        write_json(json_path, all_latencies, session_init_ms=avg_init, wer=avg_wer, ttct_ms=all_ttct)
         click.echo(f"JSON saved to: {json_path}")
 
     if plot and all_latencies:
-        plot_path = os.path.join(output, "latency_histogram.png")
+        plot_path = os.path.join(run_dir, "latency_histogram.png")
         plot_latencies(all_latencies, plot_path)
         click.echo(f"Plot saved to: {plot_path}")
+
+    if plot and all_ttct:
+        ttct_plot_path = os.path.join(run_dir, "ttct_histogram.png")
+        plot_latencies(all_ttct, ttct_plot_path, title="TTCT Distribution")
+        click.echo(f"TTCT plot saved to: {ttct_plot_path}")
 
 
 if __name__ == "__main__":
