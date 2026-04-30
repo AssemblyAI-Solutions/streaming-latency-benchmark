@@ -36,8 +36,19 @@ def test_write_csv(tmp_path, sample_latencies):
     assert os.path.exists(path)
     with open(path) as f:
         content = f.read()
-    assert "mean" in content
-    assert "median" in content
+    assert "emission_mean" in content
+    assert "emission_median" in content
+
+
+def test_write_csv_with_ttct(tmp_path, sample_latencies):
+    path = str(tmp_path / "results.csv")
+    ttct = [1100, 1180, 1250, 1300, 1400]
+    write_csv(path, sample_latencies, session_init_ms=150, wer=0.05, ttct_ms=ttct)
+    assert os.path.exists(path)
+    with open(path) as f:
+        content = f.read()
+    assert "ttct_mean" in content
+    assert "turn_index,ttct_ms" in content
 
 
 def test_write_json(tmp_path, sample_latencies):
@@ -46,5 +57,18 @@ def test_write_json(tmp_path, sample_latencies):
     assert os.path.exists(path)
     with open(path) as f:
         data = json.load(f)
-    assert "stats" in data
-    assert "per_word_latencies_ms" in data
+    assert "emission_latency" in data
+    assert "stats" in data["emission_latency"]
+    assert "per_word_latencies_ms" in data["emission_latency"]
+    assert "ttct" not in data
+
+
+def test_write_json_with_ttct(tmp_path, sample_latencies):
+    path = str(tmp_path / "results.json")
+    ttct = [1100, 1180, 1250, 1300, 1400]
+    write_json(path, sample_latencies, session_init_ms=150, wer=0.05, ttct_ms=ttct)
+    with open(path) as f:
+        data = json.load(f)
+    assert "ttct" in data
+    assert data["ttct"]["per_turn_ttct_ms"] == ttct
+    assert data["ttct"]["stats"]["count"] == 5

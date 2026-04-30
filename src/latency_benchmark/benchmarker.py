@@ -14,7 +14,7 @@ from latency_benchmark.models import (
 
 
 class LatencyBenchmarker:
-    """Computes per-word emission latency by aligning ground truth with streamed transcripts."""
+    """Computes per-word emission latency and per-turn TTCT from streamed transcripts."""
 
     def __init__(self):
         self._normalizer = EnglishTextNormalizer()
@@ -115,6 +115,46 @@ class LatencyBenchmarker:
 
         return matched
 
+    def _compute_ttct(
+        self,
+        chunks: List[AudioChunkProcessing],
+        transcripts: List[StreamingTranscript],
+    ) -> List[int]:
+        """Compute time-to-complete-transcript for each finalized turn.
+
+        For each Turn message with end_of_turn=True, TTCT is the wall-clock gap
+        between sending the audio chunk that covers the turn's last word's end
+        and receiving the final-turn message itself.
+        """
+        if not chunks:
+            return []
+
+        ttcts = []
+        chunk_idx = 0
+
+        for t in transcripts:
+            if not t.is_final or not t.words:
+                continue
+
+            last_word_end_ms = t.words[-1].end_ms
+
+            while (
+                chunk_idx < len(chunks) - 1
+                and chunks[chunk_idx].audio_end_ts_ms < last_word_end_ms
+            ):
+                chunk_idx += 1
+
+            if chunks[chunk_idx].audio_end_ts_ms < last_word_end_ms:
+                continue
+
+            ttct_ms = round(
+                (t.abs_processing_ts - chunks[chunk_idx].processing_ts) * 1000
+            )
+            if ttct_ms >= 0:
+                ttcts.append(ttct_ms)
+
+        return ttcts
+
     def _compute_latencies(
         self,
         chunks: List[AudioChunkProcessing],
@@ -173,9 +213,12 @@ class LatencyBenchmarker:
         # decoding) but not a meaningful latency measurement.
         latencies = [lat for lat in latencies if lat >= 0]
 
+        ttct_ms = self._compute_ttct(output.chunks_processing, output.transcripts)
+
         return BenchmarkResult(
             session_init_latency_ms=output.session_init_latency_ms,
             first_partial_latency_ms=latencies[0] if latencies else 0,
             per_word_latencies_ms=latencies,
+            ttct_ms=ttct_ms,
             wer=wer,
         )
