@@ -75,7 +75,7 @@ Load audio        Stream to API       Align & compute            Report
 - **Send thread** writes chunks to the WebSocket and records the monotonic timestamp of each send
 - **Receive thread** reads transcript messages from the WebSocket and records the monotonic timestamp of each receive
 
-**Step 3 — Align & compute (emission latency):** The API's transcript won't perfectly match ground truth (some words may be missing, substituted, or added). The tool uses [jiwer](https://github.com/jitsi/jiwer) to perform word-level edit-distance alignment between the normalized ground truth and the normalized API output, keeping only words that match in both. For each matched word:
+**Step 3 — Align & compute (emission latency):** The API's transcript might not perfectly match ground truth (some words may be missing, substituted, or added). The tool uses [jiwer](https://github.com/jitsi/jiwer) to perform word-level edit-distance alignment between the normalized ground truth and the normalized API output, keeping only words that match in both. For each matched word:
 - Find the audio chunk that covers the word's end timestamp ("Moment A" — when all audio for this word was sent)
 - Find the first transcript message containing this word ("Moment B" — when the API first returned this word)
 - **Emission latency = Moment B − Moment A**
